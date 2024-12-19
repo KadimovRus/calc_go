@@ -79,7 +79,10 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) {
 
 	result, err := calculation.Calc(request.Expression)
 	if err != nil {
-		if errors.Is(err, calculation.ErrInvalidExpression) || errors.Is(err, calculation.ErrUnbalancedParentheses) {
+		if errors.Is(err, calculation.ErrInvalidExpression) ||
+			errors.Is(err, calculation.ErrUnbalancedParentheses) ||
+			errors.Is(err, calculation.ErrDivisionByZero) ||
+			errors.Is(err, calculation.ErrInvalidTypeOfOperation) {
 			http.Error(w, fmt.Sprintf("err: %s", err.Error()), http.StatusUnprocessableEntity)
 		} else {
 			http.Error(w, fmt.Sprintf("err: %s", err.Error()), http.StatusInternalServerError)
