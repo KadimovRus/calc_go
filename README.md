@@ -31,7 +31,28 @@ go mod tidy
 go run main.go
 ```
 
-Сервис будет запущен на `http://localhost:8080`.
+Сервис будет запущен на `http://localhost:8080` по умолчанию
+
+Для смены порта необходимо указать его в окружении перед запуском
+   Для Windows command prompt:
+      ```cmd
+      set PORT=3000
+      go run main.go
+      ```
+   Для PowerShell:
+      ```powershell
+      $env:PORT=3000
+      go run main.go
+      ```
+   Если вы используете Docker, вы можете установить переменную окружения в Dockerfile:
+      ```dockerfile
+      ENV PORT=3000
+      ```
+
+   Либо передать переменные окружения при запуске контейнера:
+      ```bash
+      docker run -e PORT=3000 your-image-name
+      ```
 
 ### API
 
