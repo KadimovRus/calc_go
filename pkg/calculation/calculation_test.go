@@ -2,10 +2,11 @@ package calculation_test
 
 import (
 	"finalTask/pkg/calculation"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestCalc(t *testing.T) {
+func TestCalcSuccess(t *testing.T) {
 	testCasesSuccess := []struct {
 		name           string
 		expression     string
@@ -36,19 +37,17 @@ func TestCalc(t *testing.T) {
 	for _, testCase := range testCasesSuccess {
 		t.Run(testCase.name, func(t *testing.T) {
 			val, err := calculation.Calc(testCase.expression)
-			if err != nil {
-				t.Fatalf("successful case %s returns error", testCase.expression)
-			}
-			if val != testCase.expectedResult {
-				t.Fatalf("%f should be equal %f", val, testCase.expectedResult)
-			}
+			assert.Nil(t, err)
+			assert.Equal(t, testCase.expectedResult, val)
 		})
 	}
+}
+
+func TestCalcUnsuccessful(t *testing.T) {
 
 	testCasesFail := []struct {
-		name        string
-		expression  string
-		expectedErr error
+		name       string
+		expression string
 	}{
 		{
 			name:       "simple",

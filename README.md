@@ -28,24 +28,24 @@ go mod tidy
 Для запуска сервиса используйте следующую команду:
 
 ```bash
-go run main.go
+go run cmd/main.go
 ```
 
 Сервис будет запущен на `http://localhost:8080` по умолчанию
 
 Для смены порта необходимо указать его в окружении перед запуском
    Для Windows command prompt:
-      ```cmd
+      ```
       set PORT=3000
       go run main.go
       ```
    Для PowerShell:
-      ```powershell
+      ```
       $env:PORT=3000
       go run main.go
       ```
    Если вы используете Docker, вы можете установить переменную окружения в Dockerfile:
-      ```dockerfile
+      ```
       ENV PORT=3000
       ```
 

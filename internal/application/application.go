@@ -1,7 +1,6 @@
 package application
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"finalTask/pkg/calculation"
@@ -9,7 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"time"
 )
 
 type Config struct {
@@ -35,35 +34,6 @@ func New() *Application {
 	}
 }
 
-// Функция запуска приложения
-// тут будем чиать введенную строку и после нажатия ENTER писать результат работы программы на экране
-// если пользователь ввел exit - то останаваливаем приложение
-func (a *Application) Run() error {
-	for {
-		// читаем выражение для вычисления из командной строки
-		log.Println("input expression")
-		reader := bufio.NewReader(os.Stdin)
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			log.Println("failed to read expression from console")
-		}
-		// убираем пробелы, чтобы оставить только вычислемое выражение
-		text = strings.TrimSpace(text)
-		// выходим, если ввели команду "exit"
-		if text == "exit" {
-			log.Println("application was successfully closed")
-			return nil
-		}
-		//вычисляем выражение
-		result, err := calculation.Calc(text)
-		if err != nil {
-			log.Println(text, " calculation failed wit error: ", err)
-		} else {
-			log.Println(text, "=", result)
-		}
-	}
-}
-
 type Request struct {
 	Expression string `json:"expression"`
 }
@@ -79,21 +49,38 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) {
 
 	result, err := calculation.Calc(request.Expression)
 	if err != nil {
+		errorMessage := fmt.Sprintf("{err: %s}", err.Error())
 		if errors.Is(err, calculation.ErrInvalidExpression) ||
 			errors.Is(err, calculation.ErrUnbalancedParentheses) ||
 			errors.Is(err, calculation.ErrDivisionByZero) ||
 			errors.Is(err, calculation.ErrInvalidTypeOfOperation) {
-			http.Error(w, fmt.Sprintf("err: %s", err.Error()), http.StatusUnprocessableEntity)
+			http.Error(w, errorMessage, http.StatusUnprocessableEntity)
 		} else {
-			http.Error(w, fmt.Sprintf("err: %s", err.Error()), http.StatusInternalServerError)
+			http.Error(w, errorMessage, http.StatusInternalServerError)
 		}
 
 	} else {
-		fmt.Fprintf(w, "result: %f", result)
+		fmt.Fprintf(w, "{result: %f}", result)
 	}
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		next.ServeHTTP(w, r)
+
+		log.Printf("%s %s %s %s",
+			r.Method,
+			r.URL.Hostname(),
+			r.URL.Path,
+			time.Since(start))
+	})
+}
+
 func (a *Application) RunServer() error {
-	http.HandleFunc("/api/v1/calculate", CalcHandler)
-	return http.ListenAndServe(":"+a.config.Addr, nil)
+	mux := http.NewServeMux()
+	handler := http.HandlerFunc(CalcHandler)
+	mux.Handle("/api/v1/calculate", loggingMiddleware(handler))
+	return http.ListenAndServe(":"+a.config.Addr, mux)
 }

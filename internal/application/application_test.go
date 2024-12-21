@@ -1,13 +1,14 @@
 package application
 
 import (
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func TestCalcHandler(t *testing.T) {
+func TestCalcHandlerSuccess(t *testing.T) {
 	// Проверка успешного запроса
 
 	testCasesSuccess := []struct {
@@ -18,22 +19,22 @@ func TestCalcHandler(t *testing.T) {
 		{
 			name:           "simple",
 			expression:     `{"expression": "1+1"}`,
-			expectedResult: "result: 2.000000",
+			expectedResult: "{result: 2.000000}",
 		},
 		{
 			name:           "priority",
 			expression:     `{"expression": "(2+2)*2"}`,
-			expectedResult: "result: 8.000000",
+			expectedResult: "{result: 8.000000}",
 		},
 		{
 			name:           "priority",
 			expression:     `{"expression": "2+2*2"}`,
-			expectedResult: "result: 6.000000",
+			expectedResult: "{result: 6.000000}",
 		},
 		{
 			name:           "/",
 			expression:     `{"expression": "1/2"}`,
-			expectedResult: "result: 0.500000",
+			expectedResult: "{result: 0.500000}",
 		},
 	}
 
@@ -43,51 +44,41 @@ func TestCalcHandler(t *testing.T) {
 
 		CalcHandler(w, req)
 
-		if w.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-		}
-
-		expectedBody := tc.expectedResult
-		if w.Body.String() != expectedBody {
-			t.Errorf("Expected body %s, got %s", expectedBody, w.Body.String())
-		}
+		assert.Equal(t, w.Code, http.StatusOK, "they should be equal")
+		assert.Equal(t, w.Body.String(), tc.expectedResult, "they should be equal")
 	}
+}
 
-	testCasesUnsuccessfull := []struct {
+func TestCalcHandlerUnsuccessful(t *testing.T) {
+
+	testCasesUnsuccessful := []struct {
 		name           string
 		expression     string
 		expectedResult string
 	}{
 		{
-			name:           "simple",
+			name:           "expressionNotValid",
 			expression:     `{"expression": "1+1/"}`,
-			expectedResult: "err: expression is not valid\n",
+			expectedResult: "{err: expression is not valid}\n",
 		},
 		{
-			name:           "priority",
+			name:           "divisionByZero",
 			expression:     `{"expression": "(2+2)/0"}`,
-			expectedResult: "err: division by zero\n",
+			expectedResult: "{err: division by zero}\n",
 		},
 		{
-			name:           "priority",
+			name:           "unbalancedParentheses",
 			expression:     `{"expression": "2+2*2)"}`,
-			expectedResult: "err: unbalanced parentheses\n",
+			expectedResult: "{err: unbalanced parentheses}\n",
 		},
 	}
 
-	for _, tc := range testCasesUnsuccessfull {
+	for _, tc := range testCasesUnsuccessful {
 		req, _ := http.NewRequest("POST", "/", strings.NewReader(tc.expression))
 		w := httptest.NewRecorder()
 
 		CalcHandler(w, req)
-
-		if w.Code != http.StatusUnprocessableEntity {
-			t.Errorf("Expected status code %d, got %d", http.StatusUnprocessableEntity, w.Code)
-		}
-
-		expectedBody := tc.expectedResult
-		if w.Body.String() != expectedBody {
-			t.Errorf("Expected body %s, got %s", expectedBody, w.Body.String())
-		}
+		assert.Equal(t, w.Code, http.StatusUnprocessableEntity, "they should be equal")
+		assert.Equal(t, w.Body.String(), tc.expectedResult, "they should be equal")
 	}
 }
