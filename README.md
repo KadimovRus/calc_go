@@ -11,8 +11,7 @@
 Затем, клонируйте репозиторий:
 
 ```bash
-git clone https://github.com/ваш_username/ваш_репозиторий.git
-cd ваш_репозиторий
+git clone https://github.com/KadimovRus/calc_go.git
 ```
 
 Установите зависимости:
