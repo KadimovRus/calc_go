@@ -50,10 +50,7 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) {
 	result, err := calculation.Calc(request.Expression)
 	if err != nil {
 		errorMessage := fmt.Sprintf("{err: %s}", err.Error())
-		if errors.Is(err, calculation.ErrInvalidExpression) ||
-			errors.Is(err, calculation.ErrUnbalancedParentheses) ||
-			errors.Is(err, calculation.ErrDivisionByZero) ||
-			errors.Is(err, calculation.ErrInvalidTypeOfOperation) {
+		if errors.Is(err, calculation.ErrInvalidExpression) {
 			http.Error(w, errorMessage, http.StatusUnprocessableEntity)
 		} else {
 			http.Error(w, errorMessage, http.StatusInternalServerError)

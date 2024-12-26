@@ -64,12 +64,12 @@ func TestCalcHandlerUnsuccessful(t *testing.T) {
 		{
 			name:           "divisionByZero",
 			expression:     `{"expression": "(2+2)/0"}`,
-			expectedResult: "{err: division by zero}\n",
+			expectedResult: "{err: expression is not valid}\n",
 		},
 		{
 			name:           "unbalancedParentheses",
 			expression:     `{"expression": "2+2*2)"}`,
-			expectedResult: "{err: unbalanced parentheses}\n",
+			expectedResult: "{err: expression is not valid}\n",
 		},
 	}
 
