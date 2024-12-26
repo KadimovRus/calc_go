@@ -15,11 +15,11 @@ func applyOperation(a, b float64, op string) (float64, error) {
 		return a * b, nil
 	} else if op == "/" {
 		if b == 0 {
-			return 0, ErrDivisionByZero
+			return 0, ErrInvalidExpression
 		}
 		return a / b, nil
 	}
-	return 0, ErrInvalidTypeOfOperation
+	return 0, ErrInvalidExpression
 }
 
 func volumeOperation(op string) int {
@@ -56,7 +56,7 @@ func Calc(expression string) (float64, error) {
 				ops = ops[:len(ops)-1]
 			}
 			if len(ops) == 0 || ops[len(ops)-1] != "(" {
-				return 0, ErrUnbalancedParentheses
+				return 0, ErrInvalidExpression
 			}
 			ops = ops[:len(ops)-1]
 
